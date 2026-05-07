@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Plan {
+  FREE
+  PRO
+}
+
+enum GenerationType {
+  GUIDE
+  QUIZ
+  CHAT
+  PATH
+}
+
+enum Status {
+  SUCCESS
+  ERROR
+}
+
+model User {
+  id                 String          @id @default(uuid())
+  name               String
+  email              String          @unique
+  passwordHash       String
+  role               Role            @default(USER)
+  plan               Plan            @default(FREE)
+  dailyGenerations   Int             @default(0)
+  lastGenerationDate DateTime?
+  createdAt          DateTime        @default(now())
+
+  studySessions      StudySession[]
+  quizResults        QuizResult[]
+  generationLogs     GenerationLog[]
+  reviews            Review[]
+}
+
+model Topic {
+  id           String   @id @default(uuid())
+  title        String
+  slug         String   @unique
+  category     String
+  difficulty   String
+  description  String
+  imageUrl     String?
+  studyCount   Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  studySessions  StudySession[]
+  quizResults    QuizResult[]
+  generationLogs GenerationLog[]
+  reviews        Review[]
+}
+
+model StudySession {
+  id             String    @id @default(uuid())
+  userId         String
+  topicId        String
+  guideGenerated Boolean   @default(false)
+  startedAt      DateTime  @default(now())
+  completedAt    DateTime?
+
+  user           User      @relation(fields: [userId], references: [id])
+  topic          Topic     @relation(fields: [topicId], references: [id])
+}
+
+model QuizResult {
+  id             String       @id @default(uuid())
+  userId         String
+  topicId        String
+  score          Int
+  totalQuestions Int
+  timeTaken      Int          // in seconds
+  passed         Boolean
+  completedAt    DateTime     @default(now())
+
+  user           User         @relation(fields: [userId], references: [id])
+  topic          Topic        @relation(fields: [topicId], references: [id])
+  answers        QuizAnswer[]
+}
+
+model QuizAnswer {
+  id             String     @id @default(uuid())
+  quizResultId   String
+  questionIndex  Int
+  selectedIndex  Int
+  correct        Boolean
+
+  quizResult     QuizResult @relation(fields: [quizResultId], references: [id])
+}
+
+model GenerationLog {
+  id              String         @id @default(uuid())
+  userId          String
+  topicId         String?
+  type            GenerationType
+  estimatedTokens Int
+  status          Status
+  createdAt       DateTime       @default(now())
+
+  user            User           @relation(fields: [userId], references: [id])
+  topic           Topic?         @relation(fields: [topicId], references: [id])
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  userId    String
+  topicId   String
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+  topic     Topic    @relation(fields: [topicId], references: [id])
+}
