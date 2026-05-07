@@ -4,8 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node dist/server.js",
+    "build": "prisma generate && tsc && tsc-alias -p tsconfig.json --resolve-full-paths",
     "dev": "tsx watch src/server.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "eslint ./src/**/*",
+    "migrate": "prisma migrate dev",
+    "generate": "prisma generate",
+    "studio": "prisma studio",
+    "push": "prisma db push",
+    "pull": "prisma db pull"
   },
   "keywords": [],
   "author": "",
@@ -24,6 +31,7 @@
     "helmet": "^8.1.0",
     "morgan": "^1.10.1",
     "pg": "^8.20.0",
+    "tsc-alias": "^1.8.17",
     "winston": "^3.19.0"
   },
   "devDependencies": {
