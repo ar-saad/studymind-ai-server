@@ -1,10 +1,10 @@
+
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 enum Role {
@@ -30,32 +30,38 @@ enum Status {
 }
 
 model User {
-  id                 String          @id @default(uuid())
+  id                 String    @id @default(uuid())
   name               String
-  email              String          @unique
-  passwordHash       String
-  role               Role            @default(USER)
-  plan               Plan            @default(FREE)
-  dailyGenerations   Int             @default(0)
+  email              String    @unique
+  emailVerified      Boolean   @default(false)
+  image              String?
+  role               Role      @default(USER)
+  plan               Plan      @default(FREE)
+  dailyGenerations   Int       @default(0)
   lastGenerationDate DateTime?
-  createdAt          DateTime        @default(now())
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
-  studySessions      StudySession[]
-  quizResults        QuizResult[]
-  generationLogs     GenerationLog[]
-  reviews            Review[]
+  studySessions  StudySession[]
+  quizResults    QuizResult[]
+  generationLogs GenerationLog[]
+  reviews        Review[]
+  sessions       Session[]
+  accounts       Account[]
+
+  @@map("user")
 }
 
 model Topic {
-  id           String   @id @default(uuid())
-  title        String
-  slug         String   @unique
-  category     String
-  difficulty   String
-  description  String
-  imageUrl     String?
-  studyCount   Int      @default(0)
-  createdAt    DateTime @default(now())
+  id          String   @id @default(uuid())
+  title       String
+  slug        String   @unique
+  category    String
+  difficulty  String
+  description String
+  imageUrl    String?
+  studyCount  Int      @default(0)
+  createdAt   DateTime @default(now())
 
   studySessions  StudySession[]
   quizResults    QuizResult[]
@@ -71,33 +77,33 @@ model StudySession {
   startedAt      DateTime  @default(now())
   completedAt    DateTime?
 
-  user           User      @relation(fields: [userId], references: [id])
-  topic          Topic     @relation(fields: [topicId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+  topic Topic @relation(fields: [topicId], references: [id])
 }
 
 model QuizResult {
-  id             String       @id @default(uuid())
+  id             String   @id @default(uuid())
   userId         String
   topicId        String
   score          Int
   totalQuestions Int
-  timeTaken      Int          // in seconds
+  timeTaken      Int // in seconds
   passed         Boolean
-  completedAt    DateTime     @default(now())
+  completedAt    DateTime @default(now())
 
-  user           User         @relation(fields: [userId], references: [id])
-  topic          Topic        @relation(fields: [topicId], references: [id])
-  answers        QuizAnswer[]
+  user    User         @relation(fields: [userId], references: [id])
+  topic   Topic        @relation(fields: [topicId], references: [id])
+  answers QuizAnswer[]
 }
 
 model QuizAnswer {
-  id             String     @id @default(uuid())
-  quizResultId   String
-  questionIndex  Int
-  selectedIndex  Int
-  correct        Boolean
+  id            String  @id @default(uuid())
+  quizResultId  String
+  questionIndex Int
+  selectedIndex Int
+  correct       Boolean
 
-  quizResult     QuizResult @relation(fields: [quizResultId], references: [id])
+  quizResult QuizResult @relation(fields: [quizResultId], references: [id])
 }
 
 model GenerationLog {
@@ -109,8 +115,8 @@ model GenerationLog {
   status          Status
   createdAt       DateTime       @default(now())
 
-  user            User           @relation(fields: [userId], references: [id])
-  topic           Topic?         @relation(fields: [topicId], references: [id])
+  user  User   @relation(fields: [userId], references: [id])
+  topic Topic? @relation(fields: [topicId], references: [id])
 }
 
 model Review {
@@ -121,6 +127,54 @@ model Review {
   comment   String?
   createdAt DateTime @default(now())
 
-  user      User     @relation(fields: [userId], references: [id])
-  topic     Topic    @relation(fields: [topicId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+  topic Topic @relation(fields: [topicId], references: [id])
+}
+
+// Better Auth tables
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
 }
