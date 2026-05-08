@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from "express";
+import * as Sentry from "@sentry/node";
 import { AppError } from "../utils/AppError";
+import logger from "../config/logger";
 
 /**
  * Global error handler middleware.
@@ -7,7 +9,7 @@ import { AppError } from "../utils/AppError";
  */
 export const globalErrorHandler = (
   err: Error | AppError,
-  _req: Request,
+  req: Request,
   res: Response,
   _next: NextFunction
 ) => {
@@ -24,9 +26,31 @@ export const globalErrorHandler = (
     message = err.message;
   }
 
-  // Log non-operational (programming) errors for debugging
-  if (!isOperational) {
-    console.error("💥 Unexpected Error:", err);
+  // Log the error with context
+  const errorContext = {
+    method: req.method,
+    route: req.originalUrl,
+    statusCode,
+    userId: (req as any).user?.id || null,
+    isOperational,
+  };
+
+  if (isOperational) {
+    // Operational errors (expected): log at warn level
+    logger.warn(`Operational error: ${message}`, errorContext);
+  } else {
+    // Programming/unexpected errors: log at error level with stack
+    logger.error(`Unexpected error: ${message}`, {
+      ...errorContext,
+      stack: err.stack,
+    });
+
+    // Capture in Sentry for production monitoring
+    if (process.env.NODE_ENV === "production" && process.env.SENTRY_DSN) {
+      Sentry.captureException(err, {
+        extra: errorContext,
+      });
+    }
   }
 
   res.status(statusCode).json({

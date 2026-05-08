@@ -20,6 +20,7 @@
   "type": "commonjs",
   "dependencies": {
     "@better-auth/prisma-adapter": "^1.6.9",
+    "@google/generative-ai": "^0.24.1",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "@sentry/node": "^10.52.0",

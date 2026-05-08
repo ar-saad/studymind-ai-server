@@ -21,7 +21,7 @@ enum GenerationType {
   GUIDE
   QUIZ
   CHAT
-  PATH
+  TOPIC_CREATE
 }
 
 enum Status {
@@ -37,13 +37,15 @@ model User {
   image              String?
   role               Role      @default(USER)
   plan               Plan      @default(FREE)
-  dailyGenerations   Int       @default(0)
-  lastGenerationDate DateTime?
+  dailyGenerations     Int       @default(0)
+  topicsCreatedToday   Int       @default(0)
+  lastGenerationDate   DateTime?
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
   studySessions  StudySession[]
   quizResults    QuizResult[]
+  createdTopics  Topic[]         @relation("TopicCreator")
   generationLogs GenerationLog[]
   reviews        Review[]
   sessions       Session[]
@@ -53,16 +55,18 @@ model User {
 }
 
 model Topic {
-  id          String   @id @default(uuid())
-  title       String
-  slug        String   @unique
-  category    String
-  difficulty  String
-  description String
-  imageUrl    String?
-  studyCount  Int      @default(0)
-  createdAt   DateTime @default(now())
+  id              String   @id @default(uuid())
+  title           String
+  slug            String   @unique
+  category        String
+  difficulty      String
+  description     String
+  imageUrl        String?
+  studyCount      Int      @default(0)
+  createdByUserId String?
+  createdAt       DateTime @default(now())
 
+  createdBy      User?          @relation("TopicCreator", fields: [createdByUserId], references: [id])
   studySessions  StudySession[]
   quizResults    QuizResult[]
   generationLogs GenerationLog[]
@@ -101,9 +105,10 @@ model QuizAnswer {
   quizResultId  String
   questionIndex Int
   selectedIndex Int
+  correctIndex  Int
   correct       Boolean
 
-  quizResult QuizResult @relation(fields: [quizResultId], references: [id])
+  quizResult QuizResult @relation(fields: [quizResultId], references: [id], onDelete: Cascade)
 }
 
 model GenerationLog {
@@ -113,6 +118,7 @@ model GenerationLog {
   type            GenerationType
   estimatedTokens Int
   status          Status
+  errorMessage    String?
   createdAt       DateTime       @default(now())
 
   user  User   @relation(fields: [userId], references: [id])

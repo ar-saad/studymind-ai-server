@@ -47,10 +47,8 @@ export class UserService {
     const avgScore =
       quizResults.length > 0
         ? Math.round(
-            quizResults.reduce(
-              (sum, q) => sum + (q.score / q.totalQuestions) * 100,
-              0
-            ) / quizResults.length
+            quizResults.reduce((sum, q) => sum + q.score, 0) /
+              quizResults.length
           )
         : 0;
 
@@ -160,7 +158,7 @@ export class UserService {
     let filtered = results;
     if (scoreMin !== undefined || scoreMax !== undefined) {
       filtered = results.filter((r) => {
-        const pct = Math.round((r.score / r.totalQuestions) * 100);
+        const pct = r.score;
         if (scoreMin !== undefined && pct < scoreMin) return false;
         if (scoreMax !== undefined && pct > scoreMax) return false;
         return true;
@@ -238,7 +236,8 @@ export class UserService {
     for (const qr of quizResultsWithCategory) {
       const cat = qr.topic.category;
       const existing = accuracyMap.get(cat) || { correct: 0, total: 0 };
-      existing.correct += qr.score;
+      // Convert percentage back to absolute correct answers for weighted average
+      existing.correct += Math.round((qr.score / 100) * qr.totalQuestions);
       existing.total += qr.totalQuestions;
       accuracyMap.set(cat, existing);
     }
@@ -285,7 +284,7 @@ export class UserService {
     return {
       quizScoresOverTime: quizScoresOverTime.map((q) => ({
         date: q.completedAt,
-        score: Math.round((q.score / q.totalQuestions) * 100),
+        score: q.score,
         topic: q.topic.title,
         category: q.topic.category,
       })),
