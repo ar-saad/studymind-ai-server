@@ -579,7 +579,21 @@ Return ONLY a valid JSON object with exactly this structure, no markdown:
     });
     if (!topic) throw new AppError("Topic not found.", 404);
 
-    // Increment study count
+    // Check for an existing active (uncompleted) session to prevent duplicates
+    const existingSession = await prisma.studySession.findFirst({
+      where: { userId, topicId, completedAt: null },
+    });
+
+    if (existingSession) {
+      logger.info("Returning existing active study session", {
+        userId,
+        topicId,
+        sessionId: existingSession.id,
+      });
+      return existingSession;
+    }
+
+    // Increment study count only for genuinely new sessions
     await prisma.topic.update({
       where: { id: topicId },
       data: { studyCount: { increment: 1 } },
