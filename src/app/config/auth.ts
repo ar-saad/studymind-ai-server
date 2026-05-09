@@ -37,4 +37,13 @@ export const auth = betterAuth({
     // Allow server-side / curl testing in development
     ...(process.env.NODE_ENV !== "production" ? ["http://localhost:5000"] : []),
   ],
+  advanced: {
+    crossSubDomainCookies: {
+      enabled: true,
+    },
+    defaultCookieAttributes: {
+      sameSite: "none",
+      secure: true,
+    },
+  },
 });
