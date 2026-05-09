@@ -103,4 +103,19 @@ export class TopicController {
       });
     }
   );
+
+  /**
+   * GET /api/topics/stats/public
+   */
+  static getPublicStats = asyncHandler(
+    async (_req: Request, res: Response) => {
+      const stats = await TopicService.getPublicStats();
+
+      sendResponse({
+        res,
+        message: "Public stats retrieved successfully",
+        data: stats,
+      });
+    }
+  );
 }

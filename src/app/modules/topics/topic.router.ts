@@ -9,6 +9,7 @@ const router = Router();
 router.get("/", TopicController.getTopics);
 router.get("/popular", TopicController.getPopularTopics);
 router.get("/categories", TopicController.getCategories);
+router.get("/stats/public", TopicController.getPublicStats);
 
 // Protected: Create a new topic via AI (must be before /:slug)
 router.post("/create", authenticate, AIController.createTopic);
