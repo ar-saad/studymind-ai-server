@@ -40,20 +40,11 @@ const logger = winston.createLogger({
 });
 
 if (process.env.NODE_ENV === "production") {
-  // Production: write to files
+  // Production: Vercel has a read-only filesystem, so we log to Console (stdout/stderr)
+  // Vercel automatically captures these logs. We use JSON format for easier parsing.
   logger.add(
-    new winston.transports.File({
-      filename: "logs/error.log",
-      level: "error",
-      maxsize: 5242880, // 5MB
-      maxFiles: 5,
-    })
-  );
-  logger.add(
-    new winston.transports.File({
-      filename: "logs/combined.log",
-      maxsize: 10485760, // 10MB
-      maxFiles: 5,
+    new winston.transports.Console({
+      format: combine(timestamp({ format: "YYYY-MM-DD HH:mm:ss" }), json()),
     })
   );
 } else {
