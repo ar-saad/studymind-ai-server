@@ -9,6 +9,19 @@ export const quizSchema = z.object({
   topicId: z.string().uuid(),
   difficulty: z.enum(["Beginner", "Intermediate", "Advanced"]),
   questionCount: z.coerce.number().int().min(5).max(20).default(10),
+  studyGuideContext: z
+    .object({
+      overview: z.string(),
+      keyConcepts: z.array(
+        z.object({ term: z.string(), explanation: z.string() })
+      ),
+      importantFacts: z.array(z.string()),
+      commonMisconceptions: z.array(
+        z.object({ myth: z.string(), reality: z.string() })
+      ),
+      summary: z.string(),
+    })
+    .optional(),
 });
 
 export const chatSchema = z.object({

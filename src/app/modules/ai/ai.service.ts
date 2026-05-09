@@ -287,10 +287,37 @@ Requirements:
 
     const usage = await checkAndIncrementDailyLimit(userId);
 
+    // Build the study guide context section for the prompt
+    let studyGuideSection = "";
+    if (input.studyGuideContext) {
+      const sg = input.studyGuideContext;
+      studyGuideSection = `
+The following study guide has been provided to the student. ALL quiz questions MUST be answerable
+using ONLY the information contained in this study guide. Do NOT create questions about information
+that is not present in the study guide.
+
+=== STUDY GUIDE START ===
+Overview: ${sg.overview}
+
+Key Concepts:
+${sg.keyConcepts.map((c) => `- ${c.term}: ${c.explanation}`).join("\n")}
+
+Important Facts:
+${sg.importantFacts.map((f) => `- ${f}`).join("\n")}
+
+Common Misconceptions:
+${sg.commonMisconceptions.map((m) => `- Myth: ${m.myth} | Reality: ${m.reality}`).join("\n")}
+
+Summary: ${sg.summary}
+=== STUDY GUIDE END ===
+`;
+    }
+
     const prompt = `Generate a multiple choice quiz for the following topic.
 Topic: ${topic.title}
 Difficulty: ${input.difficulty}
 Number of questions: ${input.questionCount}
+${studyGuideSection}
 Return ONLY a valid JSON object with exactly this structure, no markdown:
 {
   "questions": [
@@ -308,7 +335,7 @@ Requirements:
 - Exactly 4 options per question
 - correctIndex must be a valid index (0-3)
 - Questions should test understanding at the ${input.difficulty} level
-- Mix of factual recall and conceptual understanding questions`;
+${input.studyGuideContext ? "- CRITICAL: Every question and its correct answer MUST be directly derived from the study guide provided above. Do not introduce any information not present in the study guide." : "- Mix of factual recall and conceptual understanding questions"}`;
 
     try {
       const startTime = Date.now();
