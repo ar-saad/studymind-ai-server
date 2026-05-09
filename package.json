@@ -17,7 +17,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "dependencies": {
     "@better-auth/prisma-adapter": "^1.6.9",
     "@google/generative-ai": "^0.24.1",

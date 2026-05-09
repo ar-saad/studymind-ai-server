@@ -78,6 +78,10 @@ if (process.env.NODE_ENV === "production" && process.env.SENTRY_DSN) {
 // Global error handler (must be last)
 app.use(globalErrorHandler);
 
-app.listen(PORT, () => {
-  logger.info(`🚀 Server running on http://localhost:${PORT}`);
-});
+if (process.env.NODE_ENV !== "production") {
+  app.listen(PORT, () => {
+    logger.info(`🚀 Server running on http://localhost:${PORT}`);
+  });
+}
+
+export default app;
