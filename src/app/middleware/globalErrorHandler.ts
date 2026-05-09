@@ -22,6 +22,14 @@ export const globalErrorHandler = (
     statusCode = err.statusCode;
     message = err.message;
     isOperational = err.isOperational;
+  } else if (err.name === "MulterError") {
+    statusCode = 400;
+    isOperational = true;
+    if ((err as any).code === "LIMIT_FILE_SIZE") {
+      message = "Image size exceeds 2MB limit";
+    } else {
+      message = err.message;
+    }
   } else if (err instanceof Error) {
     message = err.message;
   }

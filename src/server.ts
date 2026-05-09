@@ -15,6 +15,7 @@ import topicRouter from "./app/modules/topics/topic.router";
 import userRouter from "./app/modules/user/user.router";
 import adminRouter from "./app/modules/admin/admin.router";
 import aiRouter from "./app/modules/ai/ai.router";
+import reviewRouter from "./app/modules/reviews/review.router";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -64,6 +65,7 @@ app.use("/api/topics", topicRouter);
 app.use("/api/user", userRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/ai", aiRouter);
+app.use("/api/reviews", reviewRouter);
 
 // 404 handler for unknown routes
 app.use((req, _res, next) => {

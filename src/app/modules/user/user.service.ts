@@ -1,6 +1,7 @@
 import prisma from "../../config/prisma";
 import { GetStudyHistoryQuery, GetQuizResultsQuery, UpdateProfileInput } from "./user.schema";
 import { AppError } from "../../utils/AppError";
+import cloudinary from "../../config/cloudinary";
 
 export class UserService {
   /**
@@ -101,10 +102,19 @@ export class UserService {
         include: {
           topic: {
             select: {
+              id: true,
               title: true,
               slug: true,
               category: true,
               difficulty: true,
+              reviews: {
+                where: { userId },
+                select: {
+                  id: true,
+                  rating: true,
+                  comment: true,
+                },
+              },
             },
           },
         },
@@ -319,6 +329,29 @@ export class UserService {
         plan: true,
         role: true,
       },
+    });
+  }
+
+  /**
+   * Upload user profile picture to Cloudinary.
+   */
+  static async uploadProfilePicture(fileBuffer: Buffer): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: "studymind-ai",
+          resource_type: "image",
+          allowed_formats: ["jpg", "jpeg", "png", "gif", "webp"],
+        },
+        (error, result) => {
+          if (error) {
+            reject(new AppError("Failed to upload image to Cloudinary", 500));
+          } else {
+            resolve(result!.secure_url);
+          }
+        }
+      );
+      uploadStream.end(fileBuffer);
     });
   }
 

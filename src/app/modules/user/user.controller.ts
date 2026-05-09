@@ -2,6 +2,7 @@ import { Response } from "express";
 import { asyncHandler } from "../../utils/asyncHandler";
 import { sendResponse } from "../../utils/apiResponse";
 import { UserService } from "./user.service";
+import { AppError } from "../../utils/AppError";
 import {
   getStudyHistorySchema,
   getQuizResultsSchema,
@@ -70,6 +71,23 @@ export class UserController {
       const body = updateProfileSchema.parse(req.body);
       const user = await UserService.updateProfile(req.user!.id, body);
       sendResponse({ res, message: "Profile updated", data: user });
+    }
+  );
+
+  /**
+   * POST /api/user/upload
+   */
+  static uploadProfilePicture = asyncHandler(
+    async (req: AuthenticatedRequest, res: Response) => {
+      if (!req.file) {
+        throw new AppError("No file uploaded or file format is invalid", 400);
+      }
+      const imageUrl = await UserService.uploadProfilePicture(req.file.buffer);
+      sendResponse({
+        res,
+        message: "Image uploaded successfully",
+        data: { imageUrl },
+      });
     }
   );
 
