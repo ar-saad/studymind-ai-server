@@ -183,7 +183,7 @@ Ensure a PostgreSQL instance is available prior to launching the server.
 3.  **Run migrations & seed**:
     ```bash
     npx prisma migrate dev
-    npx prisma db seed # If seed is configured
+    npm run seed
     ```
 4.  **Execute scripts**:
     - `npm run dev`: Runs the development server inside [tsx](https://github.com/privatezk/tsx) watcher at `http://localhost:5000`.
